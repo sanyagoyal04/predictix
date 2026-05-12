@@ -1,5 +1,6 @@
 .env
-*.pkl
+# *.pkl files are committed so Render/cloud can use pre-trained models
+
 *.keras
 *.h5
 node_modules/
