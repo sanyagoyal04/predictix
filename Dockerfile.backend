@@ -1,0 +1,44 @@
+# ── Backend Dockerfile ─────────────────────────────────────────────────────
+# Multi-stage: Node.js + Python runtime for ML models
+
+FROM python:3.11-slim AS python-base
+
+# Install Python ML dependencies
+WORKDIR /app/ML
+COPY ML/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ── Final image ─────────────────────────────────────────────────────────────
+FROM node:20-slim
+
+# Install Python3 in Node image
+RUN apt-get update && apt-get install -y python3 python3-pip curl && rm -rf /var/lib/apt/lists/*
+
+# Copy Python packages from python-base
+COPY --from=python-base /usr/local/lib/python3.11 /usr/local/lib/python3.11
+COPY --from=python-base /usr/local/bin/python3 /usr/local/bin/python3
+
+WORKDIR /app
+
+# Install backend dependencies
+COPY Backend/package*.json ./Backend/
+RUN cd Backend && npm ci --only=production
+
+# Copy ML scripts and models
+COPY ML/ ./ML/
+
+# Copy backend source
+COPY Backend/ ./Backend/
+
+# Create uploads directory
+RUN mkdir -p Backend/uploads
+
+# Create non-root user
+RUN groupadd -r predictix && useradd -r -g predictix predictix
+RUN chown -R predictix:predictix /app
+USER predictix
+
+EXPOSE 5000
+
+WORKDIR /app/Backend
+CMD ["node", "src/index.js"]

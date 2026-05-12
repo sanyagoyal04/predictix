@@ -1,0 +1,19 @@
+{
+  "name": "predictix",
+  "version": "1.0.0",
+  "description": "PredictiX - Multi-disease AI prediction platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd Backend && npm run dev",
+    "dev:frontend": "cd Frontend && npm run dev",
+    "install:all": "cd Backend && npm install && cd ../Frontend && npm install",
+    "train:models": "cd ML && python3 train_heart.py && python3 train_diabetes.py",
+    "train:all": "cd ML && python3 train_heart.py && python3 train_diabetes.py && python3 train_breast.py && python3 train_lung.py",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
