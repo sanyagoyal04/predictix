@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: predictix-backend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: |
+      cd Backend && npm install
+      pip3 install scikit-learn numpy pandas joblib --quiet
+      cd ../ML && python3 train_heart.py && python3 train_diabetes.py
+    startCommand: cd Backend && node src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

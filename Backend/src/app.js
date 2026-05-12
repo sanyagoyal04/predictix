@@ -11,8 +11,25 @@ const app = express();
 
 // ── Security Middleware ──────────────────────────────────────────────────────
 app.use(helmet({ crossOriginEmbedderPolicy: false }));
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:80',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, mobile apps)
+    if (!origin) return callback(null, true);
+    // Allow any *.vercel.app domain + configured origins
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: ${origin} not allowed`));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));
